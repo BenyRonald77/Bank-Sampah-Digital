@@ -1,0 +1,89 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Laporan Bulanan</h1>
+      <p>Rekap total sampah terkelola, nilai rupiah, setoran, dan penarikan untuk satu bulan.</p>
+    </div>
+  </div>
+
+  <form class="filter-bar" method="get" action="/laporan">
+    <div class="form-row">
+      <label for="input-bulan">Bulan</label>
+      <select id="input-bulan" name="bulan">
+        <% namaBulan.forEach(function (nm, idx) { %>
+          <option value="<%= idx + 1 %>" <%= (idx + 1) === bulan ? 'selected' : '' %>><%= nm %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="input-tahun">Tahun</label>
+      <input type="number" id="input-tahun" name="tahun" value="<%= tahun %>" min="2000" max="2100" />
+    </div>
+    <div class="form-row">
+      <button type="submit" class="btn btn-primary">Tampilkan Laporan</button>
+    </div>
+  </form>
+
+  <% if (errorFilter) { %>
+    <div class="state-box state-box--error">
+      <h3>Filter tidak valid</h3>
+      <p><%= errorFilter %></p>
+    </div>
+  <% } else if (!adaData) { %>
+    <div class="state-box">
+      <h3>Belum ada transaksi di <%= namaBulan[bulan - 1] %> <%= tahun %></h3>
+      <p>Tidak ada setoran maupun penarikan yang tercatat pada bulan ini. Coba pilih bulan lain, atau catat transaksi baru terlebih dahulu.</p>
+      <a class="btn btn-primary" href="/setoran/baru">Catat Setoran</a>
+    </div>
+  <% } else { %>
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <div class="stat-tile__label">Total berat sampah masuk</div>
+        <div class="stat-tile__value"><%= formatKg(totalBeratSetoran) %></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Total nilai setoran</div>
+        <div class="stat-tile__value"><%= formatRupiah(totalNilaiSetoran) %></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Jumlah transaksi setoran</div>
+        <div class="stat-tile__value"><%= jumlahSetoran %></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Jumlah transaksi penarikan</div>
+        <div class="stat-tile__value"><%= jumlahPenarikan %></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Total nominal penarikan</div>
+        <div class="stat-tile__value"><%= formatRupiah(totalNominalPenarikan) %></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Rincian per Jenis Sampah</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Jenis Sampah</th>
+              <th class="num">Total Berat</th>
+              <th class="num">Total Nilai</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% perJenis.forEach(function (item) { %>
+              <tr>
+                <td><%= item.nama %></td>
+                <td class="num"><%= formatKg(item.totalBerat) %></td>
+                <td class="num"><%= formatRupiah(item.totalNilai) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>

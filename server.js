@@ -668,6 +668,78 @@ app.post('/penarikan', (req, res, next) => {
   }
 });
 
+// ---------- Laporan ----------
+
+const NAMA_BULAN = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+];
+
+app.get('/laporan', (req, res, next) => {
+  try {
+    const now = new Date();
+    const bulan = parseInt(req.query.bulan, 10) || now.getMonth() + 1;
+    const tahun = parseInt(req.query.tahun, 10) || now.getFullYear();
+
+    const bulanValid = bulan >= 1 && bulan <= 12;
+    const tahunValid = tahun >= 2000 && tahun <= 2100;
+
+    if (!bulanValid || !tahunValid) {
+      return res.status(400).render('laporan/index', {
+        title: 'Laporan Bulanan',
+        active: 'laporan',
+        bulan,
+        tahun,
+        namaBulan: NAMA_BULAN,
+        errorFilter: 'Bulan atau tahun yang dipilih tidak valid.',
+        adaData: false,
+        perJenis: [],
+        totalNilaiSetoran: 0,
+        totalBeratSetoran: 0,
+        jumlahSetoran: 0,
+        jumlahPenarikan: 0,
+        totalNominalPenarikan: 0,
+      });
+    }
+
+    const prefix = `${tahun}-${String(bulan).padStart(2, '0')}`;
+    const setoranBulanIni = store.find('setoran', (s) => (s.tanggal || '').startsWith(prefix));
+    const penarikanBulanIni = store.find('penarikan', (p) => (p.tanggal || '').startsWith(prefix));
+
+    const perJenisMap = {};
+    setoranBulanIni.forEach((s) => {
+      if (!perJenisMap[s.jenisSampahNama]) {
+        perJenisMap[s.jenisSampahNama] = { nama: s.jenisSampahNama, totalBerat: 0, totalNilai: 0 };
+      }
+      perJenisMap[s.jenisSampahNama].totalBerat += Number(s.beratKg) || 0;
+      perJenisMap[s.jenisSampahNama].totalNilai += Number(s.nilaiRupiah) || 0;
+    });
+    const perJenis = Object.values(perJenisMap).sort((a, b) => b.totalNilai - a.totalNilai);
+
+    const totalNilaiSetoran = setoranBulanIni.reduce((sum, s) => sum + (Number(s.nilaiRupiah) || 0), 0);
+    const totalBeratSetoran = setoranBulanIni.reduce((sum, s) => sum + (Number(s.beratKg) || 0), 0);
+    const totalNominalPenarikan = penarikanBulanIni.reduce((sum, p) => sum + (Number(p.nominal) || 0), 0);
+
+    res.render('laporan/index', {
+      title: 'Laporan Bulanan',
+      active: 'laporan',
+      bulan,
+      tahun,
+      namaBulan: NAMA_BULAN,
+      errorFilter: null,
+      adaData: setoranBulanIni.length > 0 || penarikanBulanIni.length > 0,
+      perJenis,
+      totalNilaiSetoran,
+      totalBeratSetoran,
+      jumlahSetoran: setoranBulanIni.length,
+      jumlahPenarikan: penarikanBulanIni.length,
+      totalNominalPenarikan,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ---------- 404 ----------
 
 app.use((req, res) => {
