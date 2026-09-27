@@ -1,0 +1,65 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Catat Setoran</h1>
+      <p>Nilai rupiah dihitung otomatis dari berat dikali harga per kg yang berlaku saat ini, dan disimpan sebagai catatan tetap walau harga berubah nanti.</p>
+    </div>
+  </div>
+
+  <% if (belumSiap) { %>
+    <div class="state-box">
+      <h3>Belum bisa mencatat setoran</h3>
+      <% if (!punyaNasabah) { %>
+        <p>Belum ada nasabah terdaftar. Tambahkan nasabah terlebih dahulu.</p>
+        <a class="btn btn-primary" href="/nasabah/baru">Tambah Nasabah</a>
+      <% } else if (!punyaJenisSampah) { %>
+        <p>Belum ada jenis sampah terdaftar. Tambahkan jenis sampah terlebih dahulu.</p>
+        <a class="btn btn-primary" href="/jenis-sampah/baru">Tambah Jenis Sampah</a>
+      <% } %>
+    </div>
+  <% } else { %>
+    <% if (Object.keys(errors).length > 0) { %>
+      <div class="form-error-banner">Periksa kembali data yang diisi, ada bagian yang belum sesuai.</div>
+    <% } %>
+
+    <form class="form" method="post" action="/setoran">
+      <div class="form-row">
+        <label for="input-nasabah">Nasabah</label>
+        <select id="input-nasabah" name="nasabahId" required>
+          <option value="">Pilih nasabah</option>
+          <% nasabahList.forEach(function (n) { %>
+            <option value="<%= n.id %>" <%= values.nasabahId === n.id ? 'selected' : '' %>><%= n.kode %> - <%= n.nama %></option>
+          <% }) %>
+        </select>
+        <% if (errors.nasabahId) { %><span class="field-error"><%= errors.nasabahId %></span><% } %>
+      </div>
+
+      <div class="form-row">
+        <label for="input-jenis-sampah">Jenis Sampah</label>
+        <select id="input-jenis-sampah" name="jenisSampahId" required>
+          <option value="">Pilih jenis sampah</option>
+          <% jenisSampahList.forEach(function (j) { %>
+            <option value="<%= j.id %>" data-harga="<%= j.hargaPerKg %>" <%= values.jenisSampahId === j.id ? 'selected' : '' %>><%= j.nama %> (<%= formatRupiah(j.hargaPerKg) %>/kg)</option>
+          <% }) %>
+        </select>
+        <% if (errors.jenisSampahId) { %><span class="field-error"><%= errors.jenisSampahId %></span><% } %>
+      </div>
+
+      <div class="form-row">
+        <label for="input-berat">Berat (kg)</label>
+        <input type="number" id="input-berat" name="beratKg" value="<%= values.beratKg || '' %>" required min="0.1" step="0.1" />
+        <% if (errors.beratKg) { %><span class="field-error"><%= errors.beratKg %></span><% } %>
+      </div>
+
+      <div class="preview-box" id="preview-nilai">Pilih jenis sampah dan berat untuk melihat estimasi nilai.</div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Simpan Setoran</button>
+        <a class="btn" href="/setoran">Batal</a>
+      </div>
+    </form>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>

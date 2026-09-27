@@ -9,7 +9,10 @@
       <p>Kode: <%= nasabah.kode %><% if (nasabah.telepon) { %> - Telepon: <%= nasabah.telepon %><% } %></p>
       <p>Alamat: <%= nasabah.alamat || '-' %></p>
     </div>
-    <a class="btn" href="/nasabah/<%= nasabah.id %>/edit">Ubah Data</a>
+    <div class="row-actions">
+      <a class="btn" href="/nasabah/<%= nasabah.id %>/edit">Ubah Data</a>
+      <a class="btn btn-primary" href="/setoran/baru?nasabahId=<%= nasabah.id %>">Catat Setoran</a>
+    </div>
   </div>
 
   <div class="stat-grid">
@@ -25,6 +28,7 @@
       <div class="state-box">
         <h3>Belum ada setoran</h3>
         <p>Nasabah ini belum pernah menyetor sampah.</p>
+        <a class="btn btn-primary" href="/setoran/baru?nasabahId=<%= nasabah.id %>">Catat Setoran</a>
       </div>
     <% } else { %>
       <ul class="ledger-list">

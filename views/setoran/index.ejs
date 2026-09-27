@@ -1,0 +1,42 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <%- include('../partials/flash', { flash: flash, flashType: flashType }) %>
+
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Setoran</h1>
+      <p>Riwayat setoran sampah dari seluruh nasabah, dari yang terbaru.</p>
+    </div>
+    <% if (punyaNasabah) { %>
+      <a class="btn btn-primary" href="/setoran/baru">Catat Setoran</a>
+    <% } %>
+  </div>
+
+  <% if (!punyaNasabah) { %>
+    <div class="state-box">
+      <h3>Belum ada nasabah</h3>
+      <p>Tambahkan nasabah terlebih dahulu sebelum mencatat setoran sampah.</p>
+      <a class="btn btn-primary" href="/nasabah/baru">Tambah Nasabah</a>
+    </div>
+  <% } else if (setoranList.length === 0) { %>
+    <div class="state-box">
+      <h3>Belum ada setoran tercatat</h3>
+      <p>Catat setoran pertama untuk mulai mengubah berat sampah menjadi saldo nasabah.</p>
+      <a class="btn btn-primary" href="/setoran/baru">Catat Setoran</a>
+    </div>
+  <% } else { %>
+    <ul class="ledger-list">
+      <% setoranList.forEach(function (s) { %>
+        <li class="ledger-item ledger-item--setoran">
+          <div class="ledger-item__main">
+            <span class="ledger-item__title"><%= s.nasabahNama %> - <%= s.jenisSampahNama %></span>
+            <span class="ledger-item__meta"><%= formatTanggal(s.tanggal) %> - <%= formatKg(s.beratKg) %> x <%= formatRupiah(s.hargaPerKgSaatItu) %>/kg</span>
+          </div>
+          <span class="ledger-item__value ledger-item__value--in">+<%= formatRupiah(s.nilaiRupiah) %></span>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>

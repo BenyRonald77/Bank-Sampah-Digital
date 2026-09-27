@@ -450,6 +450,122 @@ app.delete('/jenis-sampah/:id', (req, res, next) => {
   }
 });
 
+// ---------- Setoran ----------
+
+app.get('/setoran', (req, res, next) => {
+  try {
+    const nasabahList = store.readAll('nasabah');
+    const setoranList = store
+      .readAll('setoran')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .map((s) => {
+        const nasabah = findById('nasabah', s.nasabahId);
+        return Object.assign({}, s, { nasabahNama: nasabah ? nasabah.nama : 'Nasabah tidak ditemukan' });
+      });
+
+    res.render('setoran/index', {
+      title: 'Setoran',
+      active: 'setoran',
+      setoranList,
+      punyaNasabah: nasabahList.length > 0,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/setoran/baru', (req, res, next) => {
+  try {
+    const nasabahList = store.readAll('nasabah').sort((a, b) => a.nama.localeCompare(b.nama));
+    const jenisSampahList = store.readAll('jenisSampah').sort((a, b) => a.nama.localeCompare(b.nama));
+
+    if (nasabahList.length === 0 || jenisSampahList.length === 0) {
+      return res.render('setoran/form', {
+        title: 'Catat Setoran',
+        active: 'setoran',
+        belumSiap: true,
+        punyaNasabah: nasabahList.length > 0,
+        punyaJenisSampah: jenisSampahList.length > 0,
+        nasabahList,
+        jenisSampahList,
+        values: {},
+        errors: {},
+      });
+    }
+
+    res.render('setoran/form', {
+      title: 'Catat Setoran',
+      active: 'setoran',
+      belumSiap: false,
+      nasabahList,
+      jenisSampahList,
+      values: { nasabahId: req.query.nasabahId || '', jenisSampahId: '', beratKg: '' },
+      errors: {},
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/setoran', (req, res, next) => {
+  try {
+    const nasabahId = (req.body.nasabahId || '').trim();
+    const jenisSampahId = (req.body.jenisSampahId || '').trim();
+    const beratKg = toNumber(req.body.beratKg);
+
+    const nasabahList = store.readAll('nasabah').sort((a, b) => a.nama.localeCompare(b.nama));
+    const jenisSampahList = store.readAll('jenisSampah').sort((a, b) => a.nama.localeCompare(b.nama));
+
+    const nasabah = findById('nasabah', nasabahId);
+    const jenisSampah = findById('jenisSampah', jenisSampahId);
+
+    const errors = {};
+    if (!nasabah) errors.nasabahId = 'Pilih nasabah yang valid.';
+    if (!jenisSampah) errors.jenisSampahId = 'Pilih jenis sampah yang valid.';
+    if (isNaN(beratKg) || beratKg <= 0) {
+      errors.beratKg = 'Berat harus diisi dengan angka lebih besar dari 0.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).render('setoran/form', {
+        title: 'Catat Setoran',
+        active: 'setoran',
+        belumSiap: false,
+        nasabahList,
+        jenisSampahList,
+        values: { nasabahId, jenisSampahId, beratKg: req.body.beratKg },
+        errors,
+      });
+    }
+
+    const nilaiRupiah = beratKg * jenisSampah.hargaPerKg;
+    const now = new Date();
+
+    store.insert('setoran', {
+      id: crypto.randomUUID(),
+      nasabahId: nasabah.id,
+      jenisSampahId: jenisSampah.id,
+      jenisSampahNama: jenisSampah.nama,
+      beratKg,
+      hargaPerKgSaatItu: jenisSampah.hargaPerKg,
+      nilaiRupiah,
+      tanggal: now.toISOString().slice(0, 10),
+      createdAt: now.toISOString(),
+    });
+
+    store.update('nasabah', nasabah.id, { saldo: (Number(nasabah.saldo) || 0) + nilaiRupiah });
+
+    redirectWithFlash(
+      res,
+      `/nasabah/${nasabah.id}`,
+      'success',
+      `Setoran ${formatKg(beratKg)} ${jenisSampah.nama} tercatat, saldo bertambah ${formatRupiah(nilaiRupiah)}.`
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ---------- 404 ----------
 
 app.use((req, res) => {
