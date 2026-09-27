@@ -566,6 +566,108 @@ app.post('/setoran', (req, res, next) => {
   }
 });
 
+// ---------- Penarikan ----------
+
+app.get('/penarikan', (req, res, next) => {
+  try {
+    const nasabahList = store.readAll('nasabah');
+    const penarikanList = store
+      .readAll('penarikan')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .map((p) => {
+        const nasabah = findById('nasabah', p.nasabahId);
+        return Object.assign({}, p, { nasabahNama: nasabah ? nasabah.nama : 'Nasabah tidak ditemukan' });
+      });
+
+    res.render('penarikan/index', {
+      title: 'Penarikan',
+      active: 'penarikan',
+      penarikanList,
+      punyaNasabah: nasabahList.length > 0,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/penarikan/baru', (req, res, next) => {
+  try {
+    const nasabahList = store.readAll('nasabah').sort((a, b) => a.nama.localeCompare(b.nama));
+
+    if (nasabahList.length === 0) {
+      return res.render('penarikan/form', {
+        title: 'Tarik Saldo',
+        active: 'penarikan',
+        belumSiap: true,
+        nasabahList,
+        values: {},
+        errors: {},
+      });
+    }
+
+    res.render('penarikan/form', {
+      title: 'Tarik Saldo',
+      active: 'penarikan',
+      belumSiap: false,
+      nasabahList,
+      values: { nasabahId: req.query.nasabahId || '', nominal: '' },
+      errors: {},
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/penarikan', (req, res, next) => {
+  try {
+    const nasabahId = (req.body.nasabahId || '').trim();
+    const nominal = toNumber(req.body.nominal);
+
+    const nasabahList = store.readAll('nasabah').sort((a, b) => a.nama.localeCompare(b.nama));
+    const nasabah = findById('nasabah', nasabahId);
+
+    const errors = {};
+    if (!nasabah) errors.nasabahId = 'Pilih nasabah yang valid.';
+    if (isNaN(nominal) || nominal <= 0) {
+      errors.nominal = 'Nominal penarikan harus diisi dengan angka lebih besar dari 0.';
+    }
+    if (nasabah && !isNaN(nominal) && nominal > 0 && nominal > (Number(nasabah.saldo) || 0)) {
+      errors.nominal = `Saldo tidak mencukupi. Saldo tersedia saat ini: ${formatRupiah(nasabah.saldo)}.`;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).render('penarikan/form', {
+        title: 'Tarik Saldo',
+        active: 'penarikan',
+        belumSiap: false,
+        nasabahList,
+        values: { nasabahId, nominal: req.body.nominal },
+        errors,
+      });
+    }
+
+    const now = new Date();
+    store.insert('penarikan', {
+      id: crypto.randomUUID(),
+      nasabahId: nasabah.id,
+      nominal,
+      tanggal: now.toISOString().slice(0, 10),
+      createdAt: now.toISOString(),
+    });
+
+    store.update('nasabah', nasabah.id, { saldo: (Number(nasabah.saldo) || 0) - nominal });
+
+    redirectWithFlash(
+      res,
+      `/nasabah/${nasabah.id}`,
+      'success',
+      `Penarikan ${formatRupiah(nominal)} berhasil dicatat.`
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ---------- 404 ----------
 
 app.use((req, res) => {

@@ -12,6 +12,7 @@
     <div class="row-actions">
       <a class="btn" href="/nasabah/<%= nasabah.id %>/edit">Ubah Data</a>
       <a class="btn btn-primary" href="/setoran/baru?nasabahId=<%= nasabah.id %>">Catat Setoran</a>
+      <a class="btn" href="/penarikan/baru?nasabahId=<%= nasabah.id %>">Tarik Saldo</a>
     </div>
   </div>
 
@@ -51,6 +52,7 @@
       <div class="state-box">
         <h3>Belum ada penarikan</h3>
         <p>Nasabah ini belum pernah menarik saldo.</p>
+        <a class="btn btn-primary" href="/penarikan/baru?nasabahId=<%= nasabah.id %>">Tarik Saldo</a>
       </div>
     <% } else { %>
       <ul class="ledger-list">

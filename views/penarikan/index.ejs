@@ -1,0 +1,42 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <%- include('../partials/flash', { flash: flash, flashType: flashType }) %>
+
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Penarikan</h1>
+      <p>Riwayat penarikan saldo dari seluruh nasabah, dari yang terbaru.</p>
+    </div>
+    <% if (punyaNasabah) { %>
+      <a class="btn btn-primary" href="/penarikan/baru">Tarik Saldo</a>
+    <% } %>
+  </div>
+
+  <% if (!punyaNasabah) { %>
+    <div class="state-box">
+      <h3>Belum ada nasabah</h3>
+      <p>Tambahkan nasabah terlebih dahulu sebelum mencatat penarikan saldo.</p>
+      <a class="btn btn-primary" href="/nasabah/baru">Tambah Nasabah</a>
+    </div>
+  <% } else if (penarikanList.length === 0) { %>
+    <div class="state-box">
+      <h3>Belum ada penarikan tercatat</h3>
+      <p>Penarikan saldo nasabah akan muncul di sini setelah dicatat.</p>
+      <a class="btn btn-primary" href="/penarikan/baru">Tarik Saldo</a>
+    </div>
+  <% } else { %>
+    <ul class="ledger-list">
+      <% penarikanList.forEach(function (p) { %>
+        <li class="ledger-item ledger-item--penarikan">
+          <div class="ledger-item__main">
+            <span class="ledger-item__title"><%= p.nasabahNama %></span>
+            <span class="ledger-item__meta"><%= formatTanggal(p.tanggal) %> - Penarikan saldo</span>
+          </div>
+          <span class="ledger-item__value ledger-item__value--out">-<%= formatRupiah(p.nominal) %></span>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>

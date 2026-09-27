@@ -1,0 +1,47 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Tarik Saldo</h1>
+      <p>Penarikan ditolak otomatis jika nominal melebihi saldo nasabah yang tersedia.</p>
+    </div>
+  </div>
+
+  <% if (belumSiap) { %>
+    <div class="state-box">
+      <h3>Belum bisa mencatat penarikan</h3>
+      <p>Belum ada nasabah terdaftar. Tambahkan nasabah terlebih dahulu.</p>
+      <a class="btn btn-primary" href="/nasabah/baru">Tambah Nasabah</a>
+    </div>
+  <% } else { %>
+    <% if (Object.keys(errors).length > 0) { %>
+      <div class="form-error-banner">Periksa kembali data yang diisi, ada bagian yang belum sesuai.</div>
+    <% } %>
+
+    <form class="form" method="post" action="/penarikan">
+      <div class="form-row">
+        <label for="input-nasabah">Nasabah</label>
+        <select id="input-nasabah" name="nasabahId" required>
+          <option value="">Pilih nasabah</option>
+          <% nasabahList.forEach(function (n) { %>
+            <option value="<%= n.id %>" <%= values.nasabahId === n.id ? 'selected' : '' %>><%= n.kode %> - <%= n.nama %> (saldo <%= formatRupiah(n.saldo) %>)</option>
+          <% }) %>
+        </select>
+        <% if (errors.nasabahId) { %><span class="field-error"><%= errors.nasabahId %></span><% } %>
+      </div>
+
+      <div class="form-row">
+        <label for="input-nominal">Nominal Penarikan (Rupiah)</label>
+        <input type="number" id="input-nominal" name="nominal" value="<%= values.nominal || '' %>" required min="1" step="1" />
+        <% if (errors.nominal) { %><span class="field-error"><%= errors.nominal %></span><% } %>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Simpan Penarikan</button>
+        <a class="btn" href="/penarikan">Batal</a>
+      </div>
+    </form>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>
