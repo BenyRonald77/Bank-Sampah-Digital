@@ -143,7 +143,7 @@ Warga yang menyetorkan sampah dan memiliki saldo di bank sampah. Pada versi ini 
 ## 9. Non-Functional Requirements
 
 - **Performa**: seluruh operasi baca/tulis menggunakan file JSON lokal yang dibaca/ditulis secara sinkron; ditujukan untuk skala penggunaan satu bank sampah (puluhan hingga beberapa ratus nasabah), bukan untuk beban tinggi atau akses bersamaan dalam jumlah besar.
-- **Aksesibilitas**: mengacu pada prinsip antislop (R-03, R-25, R-32) — kontras teks memenuhi WCAG AA, seluruh elemen interaktif bisa dioperasikan dengan keyboard, ada indikator fokus yang terlihat jelas, dan tidak ada horizontal overflow di layar kecil.
+- **Aksesibilitas**: mengacu pada prinsip antislop (R-03, R-25, R-32): kontras teks memenuhi WCAG AA, seluruh elemen interaktif bisa dioperasikan dengan keyboard, ada indikator fokus yang terlihat jelas, dan tidak ada horizontal overflow di layar kecil.
 - **Keamanan dasar input**: seluruh input form divalidasi di sisi server (tipe angka untuk berat/nominal/harga, field wajib tidak boleh kosong, nilai berat dan nominal harus lebih besar dari nol) sebelum disimpan ke data store.
 - **Keandalan data historis**: nilai transaksi setoran tidak boleh berubah akibat perubahan harga master di kemudian hari (snapshot harga wajib diterapkan konsisten).
 

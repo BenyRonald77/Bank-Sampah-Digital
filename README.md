@@ -2,6 +2,14 @@
 
 Aplikasi web untuk mengelola operasional bank sampah komunitas (RT/RW): data nasabah, data jenis sampah dan harga per kilogram, pencatatan setoran sampah, penarikan saldo, dan laporan rekap bulanan. Lihat `PRD.md` untuk detail kebutuhan produk dan `DESIGN.md` untuk arahan desain.
 
+## Fitur
+
+- **Master data**: kelola data nasabah (kode rekening, nama, alamat, telepon) dan jenis sampah beserta harga per kg (harga bisa diubah admin kapan saja).
+- **Setoran sampah**: catat setoran per nasabah, nilai rupiah dihitung otomatis (berat x harga per kg saat itu) dan langsung menambah saldo nasabah. Harga disimpan sebagai snapshot di setiap transaksi, jadi histori tidak berubah walau harga master diedit kemudian.
+- **Penarikan saldo**: catat penarikan saldo nasabah dengan validasi saldo cukup; ditolak dengan pesan jelas jika saldo tidak mencukupi.
+- **Laporan bulanan**: filter bulan/tahun untuk melihat total berat per jenis sampah, total nilai rupiah, jumlah setoran, dan jumlah/nominal penarikan pada bulan tersebut.
+- **Dashboard**: ringkasan jumlah nasabah, jumlah jenis sampah, total saldo seluruh nasabah, dan aktivitas terbaru.
+
 ## Cara Install & Menjalankan
 
 Butuh Node.js versi 18 ke atas.
