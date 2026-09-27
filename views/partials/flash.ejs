@@ -1,0 +1,6 @@
+<% if (typeof flash !== 'undefined' && flash) { %>
+  <div class="flash flash-<%= flashType || 'success' %>" role="status" id="flash-message">
+    <span><%= flash %></span>
+    <button type="button" id="flash-dismiss" aria-label="Tutup pesan">&times;</button>
+  </div>
+<% } %>

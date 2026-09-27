@@ -1,0 +1,10 @@
+<%- include('partials/head', { title: title }) %>
+<%- include('partials/nav', { active: active }) %>
+<main class="site-main">
+  <div class="state-box state-box--error">
+    <h3><%= statusCode %> - Ada Masalah</h3>
+    <p><%= message %></p>
+    <a class="btn" href="/">Kembali ke Dashboard</a>
+  </div>
+</main>
+<%- include('partials/footer') %>

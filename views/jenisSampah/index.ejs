@@ -1,0 +1,52 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <%- include('../partials/flash', { flash: flash, flashType: flashType }) %>
+
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Jenis Sampah</h1>
+      <p>Daftar jenis sampah yang diterima beserta harga beli per kilogram. Harga bisa diubah kapan saja.</p>
+    </div>
+    <a class="btn btn-primary" href="/jenis-sampah/baru">Tambah Jenis Sampah</a>
+  </div>
+
+  <% if (list.length === 0) { %>
+    <div class="state-box">
+      <h3>Belum ada jenis sampah terdaftar</h3>
+      <p>Tambahkan jenis sampah pertama beserta harga per kg supaya petugas bisa mencatat setoran.</p>
+      <a class="btn btn-primary" href="/jenis-sampah/baru">Tambah Jenis Sampah</a>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama Jenis Sampah</th>
+            <th class="num">Harga per Kg</th>
+            <th>Terakhir Diubah</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% list.forEach(function (item) { %>
+            <tr>
+              <td><%= item.nama %></td>
+              <td class="num"><%= formatRupiah(item.hargaPerKg) %></td>
+              <td><%= formatTanggal(item.updatedAt) %></td>
+              <td>
+                <div class="row-actions">
+                  <a class="btn btn-small" href="/jenis-sampah/<%= item.id %>/edit">Ubah</a>
+                  <form method="post" action="/jenis-sampah/<%= item.id %>?_method=DELETE" data-confirm="Hapus jenis sampah &quot;<%= item.nama %>&quot;? Tindakan ini tidak bisa dibatalkan.">
+                    <button type="submit" class="btn btn-small btn-danger">Hapus</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>

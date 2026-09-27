@@ -1,0 +1,38 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1><%= mode === 'edit' ? 'Ubah Jenis Sampah' : 'Tambah Jenis Sampah' %></h1>
+      <% if (mode === 'edit') { %>
+        <p>Mengubah harga di sini tidak mengubah nilai rupiah pada setoran yang sudah tercatat sebelumnya.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (Object.keys(errors).length > 0) { %>
+    <div class="form-error-banner">Periksa kembali data yang diisi, ada bagian yang belum sesuai.</div>
+  <% } %>
+
+  <form class="form" method="post" action="<%= mode === 'edit' ? '/jenis-sampah/' + itemId + '?_method=PUT' : '/jenis-sampah' %>">
+
+    <div class="form-row">
+      <label for="input-nama">Nama Jenis Sampah</label>
+      <input type="text" id="input-nama" name="nama" value="<%= values.nama %>" required maxlength="80" />
+      <% if (errors.nama) { %><span class="field-error"><%= errors.nama %></span><% } %>
+    </div>
+
+    <div class="form-row">
+      <label for="input-harga">Harga per Kg (Rupiah)</label>
+      <input type="number" id="input-harga" name="hargaPerKg" value="<%= values.hargaPerKg %>" required min="1" step="1" />
+      <span class="hint">Contoh: 3000 untuk Rp 3.000 per kilogram.</span>
+      <% if (errors.hargaPerKg) { %><span class="field-error"><%= errors.hargaPerKg %></span><% } %>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary"><%= mode === 'edit' ? 'Simpan Perubahan' : 'Simpan Jenis Sampah' %></button>
+      <a class="btn" href="/jenis-sampah">Batal</a>
+    </div>
+  </form>
+</main>
+<%- include('../partials/footer') %>

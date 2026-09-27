@@ -1,0 +1,480 @@
+'use strict';
+
+const path = require('path');
+const crypto = require('crypto');
+const express = require('express');
+const methodOverride = require('method-override');
+const store = require('./lib/store');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ---------- Helpers ----------
+
+function formatRupiah(value) {
+  const num = Number(value) || 0;
+  return 'Rp ' + Math.round(num).toLocaleString('id-ID');
+}
+
+function formatKg(value) {
+  const num = Number(value) || 0;
+  return num.toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' kg';
+}
+
+function formatTanggal(isoDate) {
+  if (!isoDate) return '-';
+  const d = new Date(isoDate);
+  if (isNaN(d.getTime())) return isoDate;
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+app.locals.formatRupiah = formatRupiah;
+app.locals.formatKg = formatKg;
+app.locals.formatTanggal = formatTanggal;
+
+// Flash message sederhana lewat query string (tanpa session, cukup untuk demo single-process).
+app.use((req, res, next) => {
+  res.locals.flash = req.query.flash || null;
+  res.locals.flashType = req.query.flashType === 'error' ? 'error' : 'success';
+  next();
+});
+
+function redirectWithFlash(res, url, type, message) {
+  const sep = url.includes('?') ? '&' : '?';
+  res.redirect(`${url}${sep}flash=${encodeURIComponent(message)}&flashType=${type}`);
+}
+
+function findById(collection, id) {
+  return store.find(collection, (r) => r.id === id)[0] || null;
+}
+
+function toNumber(value) {
+  if (value === undefined || value === null || value === '') return NaN;
+  const n = Number(String(value).replace(',', '.'));
+  return n;
+}
+
+// ---------- Dashboard ----------
+
+app.get('/', (req, res, next) => {
+  try {
+    const nasabahList = store.readAll('nasabah');
+    const jenisSampahList = store.readAll('jenisSampah');
+    const setoranList = store.readAll('setoran');
+    const penarikanList = store.readAll('penarikan');
+
+    const totalSaldo = nasabahList.reduce((sum, n) => sum + (Number(n.saldo) || 0), 0);
+
+    const aktivitas = []
+      .concat(
+        setoranList.map((s) => ({
+          jenis: 'setoran',
+          tanggal: s.tanggal,
+          createdAt: s.createdAt,
+          nasabahId: s.nasabahId,
+          label: s.jenisSampahNama,
+          nilai: s.nilaiRupiah,
+        })),
+        penarikanList.map((p) => ({
+          jenis: 'penarikan',
+          tanggal: p.tanggal,
+          createdAt: p.createdAt,
+          nasabahId: p.nasabahId,
+          label: 'Penarikan saldo',
+          nilai: p.nominal,
+        }))
+      )
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 8)
+      .map((item) => {
+        const nasabah = findById('nasabah', item.nasabahId);
+        return Object.assign({}, item, { nasabahNama: nasabah ? nasabah.nama : 'Nasabah tidak ditemukan' });
+      });
+
+    res.render('dashboard', {
+      title: 'Dashboard',
+      active: 'dashboard',
+      totalNasabah: nasabahList.length,
+      totalJenisSampah: jenisSampahList.length,
+      totalSaldo,
+      aktivitas,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Nasabah ----------
+
+app.get('/nasabah', (req, res, next) => {
+  try {
+    const nasabahList = store.readAll('nasabah').sort((a, b) => a.kode.localeCompare(b.kode));
+    res.render('nasabah/index', {
+      title: 'Nasabah',
+      active: 'nasabah',
+      nasabahList,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/nasabah/baru', (req, res) => {
+  res.render('nasabah/form', {
+    title: 'Tambah Nasabah',
+    active: 'nasabah',
+    mode: 'create',
+    values: { kode: '', nama: '', alamat: '', telepon: '' },
+    errors: {},
+  });
+});
+
+app.post('/nasabah', (req, res, next) => {
+  try {
+    const kode = (req.body.kode || '').trim();
+    const nama = (req.body.nama || '').trim();
+    const alamat = (req.body.alamat || '').trim();
+    const telepon = (req.body.telepon || '').trim();
+
+    const errors = {};
+    if (!kode) errors.kode = 'Kode nasabah wajib diisi.';
+    if (!nama) errors.nama = 'Nama nasabah wajib diisi.';
+    if (kode && store.find('nasabah', (n) => n.kode.toLowerCase() === kode.toLowerCase()).length > 0) {
+      errors.kode = 'Kode nasabah sudah dipakai, gunakan kode lain.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).render('nasabah/form', {
+        title: 'Tambah Nasabah',
+        active: 'nasabah',
+        mode: 'create',
+        values: { kode, nama, alamat, telepon },
+        errors,
+      });
+    }
+
+    store.insert('nasabah', {
+      id: crypto.randomUUID(),
+      kode,
+      nama,
+      alamat,
+      telepon,
+      saldo: 0,
+      createdAt: new Date().toISOString(),
+    });
+
+    redirectWithFlash(res, '/nasabah', 'success', `Nasabah "${nama}" berhasil ditambahkan.`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/nasabah/:id/edit', (req, res, next) => {
+  try {
+    const nasabah = findById('nasabah', req.params.id);
+    if (!nasabah) {
+      return res.status(404).render('error', {
+        title: 'Tidak Ditemukan',
+        active: 'nasabah',
+        statusCode: 404,
+        message: 'Nasabah yang dicari tidak ditemukan. Mungkin sudah dihapus.',
+      });
+    }
+    res.render('nasabah/form', {
+      title: 'Ubah Nasabah',
+      active: 'nasabah',
+      mode: 'edit',
+      nasabahId: nasabah.id,
+      values: nasabah,
+      errors: {},
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/nasabah/:id', (req, res, next) => {
+  try {
+    const nasabah = findById('nasabah', req.params.id);
+    if (!nasabah) {
+      return res.status(404).render('error', {
+        title: 'Tidak Ditemukan',
+        active: 'nasabah',
+        statusCode: 404,
+        message: 'Nasabah yang diubah tidak ditemukan.',
+      });
+    }
+
+    const kode = (req.body.kode || '').trim();
+    const nama = (req.body.nama || '').trim();
+    const alamat = (req.body.alamat || '').trim();
+    const telepon = (req.body.telepon || '').trim();
+
+    const errors = {};
+    if (!kode) errors.kode = 'Kode nasabah wajib diisi.';
+    if (!nama) errors.nama = 'Nama nasabah wajib diisi.';
+    const dup = store.find(
+      'nasabah',
+      (n) => n.id !== nasabah.id && n.kode.toLowerCase() === kode.toLowerCase()
+    );
+    if (kode && dup.length > 0) {
+      errors.kode = 'Kode nasabah sudah dipakai nasabah lain.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).render('nasabah/form', {
+        title: 'Ubah Nasabah',
+        active: 'nasabah',
+        mode: 'edit',
+        nasabahId: nasabah.id,
+        values: { kode, nama, alamat, telepon },
+        errors,
+      });
+    }
+
+    store.update('nasabah', nasabah.id, { kode, nama, alamat, telepon });
+    redirectWithFlash(res, '/nasabah', 'success', `Data nasabah "${nama}" berhasil diperbarui.`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/nasabah/:id', (req, res, next) => {
+  try {
+    const nasabah = findById('nasabah', req.params.id);
+    if (!nasabah) {
+      return redirectWithFlash(res, '/nasabah', 'error', 'Nasabah tidak ditemukan.');
+    }
+    const punyaSetoran = store.find('setoran', (s) => s.nasabahId === nasabah.id).length > 0;
+    const punyaPenarikan = store.find('penarikan', (p) => p.nasabahId === nasabah.id).length > 0;
+    if (punyaSetoran || punyaPenarikan) {
+      return redirectWithFlash(
+        res,
+        '/nasabah',
+        'error',
+        `Nasabah "${nasabah.nama}" tidak bisa dihapus karena sudah punya riwayat transaksi.`
+      );
+    }
+    store.remove('nasabah', nasabah.id);
+    redirectWithFlash(res, '/nasabah', 'success', `Nasabah "${nasabah.nama}" berhasil dihapus.`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/nasabah/:id', (req, res, next) => {
+  try {
+    const nasabah = findById('nasabah', req.params.id);
+    if (!nasabah) {
+      return res.status(404).render('error', {
+        title: 'Tidak Ditemukan',
+        active: 'nasabah',
+        statusCode: 404,
+        message: 'Nasabah yang dicari tidak ditemukan. Mungkin sudah dihapus.',
+      });
+    }
+    const riwayatSetoran = store
+      .find('setoran', (s) => s.nasabahId === nasabah.id)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const riwayatPenarikan = store
+      .find('penarikan', (p) => p.nasabahId === nasabah.id)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.render('nasabah/detail', {
+      title: `Nasabah ${nasabah.nama}`,
+      active: 'nasabah',
+      nasabah,
+      riwayatSetoran,
+      riwayatPenarikan,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Jenis Sampah ----------
+
+app.get('/jenis-sampah', (req, res, next) => {
+  try {
+    const list = store.readAll('jenisSampah').sort((a, b) => a.nama.localeCompare(b.nama));
+    res.render('jenisSampah/index', {
+      title: 'Jenis Sampah',
+      active: 'jenis-sampah',
+      list,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/jenis-sampah/baru', (req, res) => {
+  res.render('jenisSampah/form', {
+    title: 'Tambah Jenis Sampah',
+    active: 'jenis-sampah',
+    mode: 'create',
+    values: { nama: '', hargaPerKg: '' },
+    errors: {},
+  });
+});
+
+app.post('/jenis-sampah', (req, res, next) => {
+  try {
+    const nama = (req.body.nama || '').trim();
+    const hargaPerKg = toNumber(req.body.hargaPerKg);
+
+    const errors = {};
+    if (!nama) errors.nama = 'Nama jenis sampah wajib diisi.';
+    if (isNaN(hargaPerKg) || hargaPerKg <= 0) {
+      errors.hargaPerKg = 'Harga per kg wajib diisi dengan angka lebih besar dari 0.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).render('jenisSampah/form', {
+        title: 'Tambah Jenis Sampah',
+        active: 'jenis-sampah',
+        mode: 'create',
+        values: { nama, hargaPerKg: req.body.hargaPerKg },
+        errors,
+      });
+    }
+
+    const now = new Date().toISOString();
+    store.insert('jenisSampah', {
+      id: crypto.randomUUID(),
+      nama,
+      hargaPerKg,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    redirectWithFlash(res, '/jenis-sampah', 'success', `Jenis sampah "${nama}" berhasil ditambahkan.`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/jenis-sampah/:id/edit', (req, res, next) => {
+  try {
+    const item = findById('jenisSampah', req.params.id);
+    if (!item) {
+      return res.status(404).render('error', {
+        title: 'Tidak Ditemukan',
+        active: 'jenis-sampah',
+        statusCode: 404,
+        message: 'Jenis sampah yang dicari tidak ditemukan.',
+      });
+    }
+    res.render('jenisSampah/form', {
+      title: 'Ubah Jenis Sampah',
+      active: 'jenis-sampah',
+      mode: 'edit',
+      itemId: item.id,
+      values: item,
+      errors: {},
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/jenis-sampah/:id', (req, res, next) => {
+  try {
+    const item = findById('jenisSampah', req.params.id);
+    if (!item) {
+      return res.status(404).render('error', {
+        title: 'Tidak Ditemukan',
+        active: 'jenis-sampah',
+        statusCode: 404,
+        message: 'Jenis sampah yang diubah tidak ditemukan.',
+      });
+    }
+
+    const nama = (req.body.nama || '').trim();
+    const hargaPerKg = toNumber(req.body.hargaPerKg);
+
+    const errors = {};
+    if (!nama) errors.nama = 'Nama jenis sampah wajib diisi.';
+    if (isNaN(hargaPerKg) || hargaPerKg <= 0) {
+      errors.hargaPerKg = 'Harga per kg wajib diisi dengan angka lebih besar dari 0.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).render('jenisSampah/form', {
+        title: 'Ubah Jenis Sampah',
+        active: 'jenis-sampah',
+        mode: 'edit',
+        itemId: item.id,
+        values: { nama, hargaPerKg: req.body.hargaPerKg },
+        errors,
+      });
+    }
+
+    store.update('jenisSampah', item.id, { nama, hargaPerKg, updatedAt: new Date().toISOString() });
+    redirectWithFlash(
+      res,
+      '/jenis-sampah',
+      'success',
+      `Jenis sampah "${nama}" berhasil diperbarui. Harga baru berlaku untuk setoran berikutnya, riwayat lama tidak berubah.`
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/jenis-sampah/:id', (req, res, next) => {
+  try {
+    const item = findById('jenisSampah', req.params.id);
+    if (!item) {
+      return redirectWithFlash(res, '/jenis-sampah', 'error', 'Jenis sampah tidak ditemukan.');
+    }
+    const punyaSetoran = store.find('setoran', (s) => s.jenisSampahId === item.id).length > 0;
+    if (punyaSetoran) {
+      return redirectWithFlash(
+        res,
+        '/jenis-sampah',
+        'error',
+        `Jenis sampah "${item.nama}" tidak bisa dihapus karena sudah punya riwayat setoran.`
+      );
+    }
+    store.remove('jenisSampah', item.id);
+    redirectWithFlash(res, '/jenis-sampah', 'success', `Jenis sampah "${item.nama}" berhasil dihapus.`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- 404 ----------
+
+app.use((req, res) => {
+  res.status(404).render('error', {
+    title: 'Halaman Tidak Ditemukan',
+    active: '',
+    statusCode: 404,
+    message: 'Halaman yang Anda cari tidak ada. Periksa kembali alamat yang dituju.',
+  });
+});
+
+// ---------- Error handler ----------
+
+app.use((err, req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.error(err.stack || err);
+  res.status(500).render('error', {
+    title: 'Terjadi Kesalahan',
+    active: '',
+    statusCode: 500,
+    message: 'Terjadi kesalahan pada server. Silakan coba lagi, atau hubungi petugas jika terus berulang.',
+  });
+});
+
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`Bank Sampah Digital berjalan di http://localhost:${PORT}`);
+});

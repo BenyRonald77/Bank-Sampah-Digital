@@ -1,0 +1,66 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <%- include('../partials/flash', { flash: flash, flashType: flashType }) %>
+
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1><%= nasabah.nama %></h1>
+      <p>Kode: <%= nasabah.kode %><% if (nasabah.telepon) { %> - Telepon: <%= nasabah.telepon %><% } %></p>
+      <p>Alamat: <%= nasabah.alamat || '-' %></p>
+    </div>
+    <a class="btn" href="/nasabah/<%= nasabah.id %>/edit">Ubah Data</a>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile">
+      <div class="stat-tile__label">Saldo saat ini</div>
+      <div class="stat-tile__value"><%= formatRupiah(nasabah.saldo) %></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Riwayat Setoran</h2>
+    <% if (riwayatSetoran.length === 0) { %>
+      <div class="state-box">
+        <h3>Belum ada setoran</h3>
+        <p>Nasabah ini belum pernah menyetor sampah.</p>
+      </div>
+    <% } else { %>
+      <ul class="ledger-list">
+        <% riwayatSetoran.forEach(function (s) { %>
+          <li class="ledger-item ledger-item--setoran">
+            <div class="ledger-item__main">
+              <span class="ledger-item__title"><%= s.jenisSampahNama %></span>
+              <span class="ledger-item__meta"><%= formatTanggal(s.tanggal) %> - <%= formatKg(s.beratKg) %> x <%= formatRupiah(s.hargaPerKgSaatItu) %>/kg</span>
+            </div>
+            <span class="ledger-item__value ledger-item__value--in">+<%= formatRupiah(s.nilaiRupiah) %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+
+  <div class="section">
+    <h2>Riwayat Penarikan</h2>
+    <% if (riwayatPenarikan.length === 0) { %>
+      <div class="state-box">
+        <h3>Belum ada penarikan</h3>
+        <p>Nasabah ini belum pernah menarik saldo.</p>
+      </div>
+    <% } else { %>
+      <ul class="ledger-list">
+        <% riwayatPenarikan.forEach(function (p) { %>
+          <li class="ledger-item ledger-item--penarikan">
+            <div class="ledger-item__main">
+              <span class="ledger-item__title">Penarikan saldo</span>
+              <span class="ledger-item__meta"><%= formatTanggal(p.tanggal) %></span>
+            </div>
+            <span class="ledger-item__value ledger-item__value--out">-<%= formatRupiah(p.nominal) %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</main>
+<%- include('../partials/footer') %>

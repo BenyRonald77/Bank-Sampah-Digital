@@ -1,0 +1,57 @@
+[
+  {
+    "id": "ab122b16-899e-4add-8b70-2bc44aa89864",
+    "nasabahId": "fd045c63-4052-48f5-a310-2e9e8e25e512",
+    "jenisSampahId": "9678b359-6b16-4dee-bbe2-082923343d93",
+    "jenisSampahNama": "Botol Plastik PET",
+    "beratKg": 5,
+    "hargaPerKgSaatItu": 3000,
+    "nilaiRupiah": 15000,
+    "tanggal": "2026-08-15",
+    "createdAt": "2026-08-15T02:00:00.000Z"
+  },
+  {
+    "id": "566f7fce-74e8-4099-a752-894987b415dd",
+    "nasabahId": "fd045c63-4052-48f5-a310-2e9e8e25e512",
+    "jenisSampahId": "736fddfb-52fc-4dff-bf27-0490b297df63",
+    "jenisSampahNama": "Kardus",
+    "beratKg": 10,
+    "hargaPerKgSaatItu": 2000,
+    "nilaiRupiah": 20000,
+    "tanggal": "2026-09-05",
+    "createdAt": "2026-09-05T02:00:00.000Z"
+  },
+  {
+    "id": "3d2724f8-783b-41f1-ba05-0a0f00bea62d",
+    "nasabahId": "0ab2cd46-a580-4e4a-b914-91a6b48c5225",
+    "jenisSampahId": "368ee5b3-af04-4fe4-a808-85ca50348918",
+    "jenisSampahNama": "Kaleng Aluminium",
+    "beratKg": 2,
+    "hargaPerKgSaatItu": 8000,
+    "nilaiRupiah": 16000,
+    "tanggal": "2026-09-10",
+    "createdAt": "2026-09-10T02:00:00.000Z"
+  },
+  {
+    "id": "156546af-6979-412b-8edd-60e0ac46abe0",
+    "nasabahId": "1e5dd056-cb2c-4ccb-9992-7ce14c86e1ce",
+    "jenisSampahId": "8f16543a-c6e1-4aad-8cac-227124d5f3af",
+    "jenisSampahNama": "Kertas HVS/Putih",
+    "beratKg": 8,
+    "hargaPerKgSaatItu": 1500,
+    "nilaiRupiah": 12000,
+    "tanggal": "2026-09-20",
+    "createdAt": "2026-09-20T02:00:00.000Z"
+  },
+  {
+    "id": "d6db323e-41fa-414d-93bf-3845a61b323d",
+    "nasabahId": "0ab2cd46-a580-4e4a-b914-91a6b48c5225",
+    "jenisSampahId": "a574e77d-88b6-4494-ba41-8f93ae9361da",
+    "jenisSampahNama": "Besi/Logam Campur",
+    "beratKg": 3,
+    "hargaPerKgSaatItu": 2500,
+    "nilaiRupiah": 7500,
+    "tanggal": "2026-09-22",
+    "createdAt": "2026-09-22T02:00:00.000Z"
+  }
+]

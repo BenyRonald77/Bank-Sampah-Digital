@@ -1,0 +1,58 @@
+<%- include('partials/head', { title: title }) %>
+<%- include('partials/nav', { active: active }) %>
+<main class="site-main">
+  <%- include('partials/flash', { flash: flash, flashType: flashType }) %>
+
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Dashboard</h1>
+      <p>Ringkasan operasional bank sampah hari ini.</p>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile">
+      <div class="stat-tile__label">Nasabah terdaftar</div>
+      <div class="stat-tile__value"><%= totalNasabah %></div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile__label">Jenis sampah terdaftar</div>
+      <div class="stat-tile__value"><%= totalJenisSampah %></div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile__label">Total saldo seluruh nasabah</div>
+      <div class="stat-tile__value"><%= formatRupiah(totalSaldo) %></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Aktivitas Terbaru</h2>
+    <% if (totalNasabah === 0) { %>
+      <div class="state-box">
+        <h3>Belum ada nasabah</h3>
+        <p>Tambahkan nasabah pertama untuk mulai mencatat setoran sampah.</p>
+        <a class="btn btn-primary" href="/nasabah/baru">Tambah Nasabah</a>
+      </div>
+    <% } else if (aktivitas.length === 0) { %>
+      <div class="state-box">
+        <h3>Belum ada transaksi</h3>
+        <p>Belum ada setoran atau penarikan yang tercatat. Aktivitas akan muncul di sini setelah transaksi pertama dibuat.</p>
+      </div>
+    <% } else { %>
+      <ul class="ledger-list">
+        <% aktivitas.forEach(function (item) { %>
+          <li class="ledger-item ledger-item--<%= item.jenis %>">
+            <div class="ledger-item__main">
+              <span class="ledger-item__title"><%= item.nasabahNama %> - <%= item.label %></span>
+              <span class="ledger-item__meta"><%= formatTanggal(item.tanggal) %> - <%= item.jenis === 'setoran' ? 'Setoran' : 'Penarikan' %></span>
+            </div>
+            <span class="ledger-item__value ledger-item__value--<%= item.jenis === 'setoran' ? 'in' : 'out' %>">
+              <%= item.jenis === 'setoran' ? '+' : '-' %><%= formatRupiah(item.nilai) %>
+            </span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

@@ -1,0 +1,13 @@
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">BS</span>
+      <span class="brand__name">Bank Sampah Digital</span>
+    </a>
+    <nav class="main-nav" aria-label="Navigasi utama">
+      <a href="/" <%= active === 'dashboard' ? 'aria-current="page"' : '' %>>Dashboard</a>
+      <a href="/nasabah" <%= active === 'nasabah' ? 'aria-current="page"' : '' %>>Nasabah</a>
+      <a href="/jenis-sampah" <%= active === 'jenis-sampah' ? 'aria-current="page"' : '' %>>Jenis Sampah</a>
+    </nav>
+  </div>
+</header>

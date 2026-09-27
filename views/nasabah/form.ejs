@@ -1,0 +1,45 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1><%= mode === 'edit' ? 'Ubah Nasabah' : 'Tambah Nasabah' %></h1>
+      <p>Saldo nasabah tidak bisa diubah langsung di sini. Saldo hanya berubah lewat setoran atau penarikan.</p>
+    </div>
+  </div>
+
+  <% if (Object.keys(errors).length > 0) { %>
+    <div class="form-error-banner">Periksa kembali data yang diisi, ada bagian yang belum sesuai.</div>
+  <% } %>
+
+  <form class="form" method="post" action="<%= mode === 'edit' ? '/nasabah/' + nasabahId + '?_method=PUT' : '/nasabah' %>">
+
+    <div class="form-row">
+      <label for="input-kode">Kode / Nomor Rekening Nasabah</label>
+      <input type="text" id="input-kode" name="kode" value="<%= values.kode %>" required maxlength="20" />
+      <% if (errors.kode) { %><span class="field-error"><%= errors.kode %></span><% } %>
+    </div>
+
+    <div class="form-row">
+      <label for="input-nama">Nama Nasabah</label>
+      <input type="text" id="input-nama" name="nama" value="<%= values.nama %>" required maxlength="100" />
+      <% if (errors.nama) { %><span class="field-error"><%= errors.nama %></span><% } %>
+    </div>
+
+    <div class="form-row">
+      <label for="input-alamat">Alamat (opsional)</label>
+      <textarea id="input-alamat" name="alamat" maxlength="200"><%= values.alamat || '' %></textarea>
+    </div>
+
+    <div class="form-row">
+      <label for="input-telepon">Nomor Telepon (opsional)</label>
+      <input type="tel" id="input-telepon" name="telepon" value="<%= values.telepon || '' %>" maxlength="20" />
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary"><%= mode === 'edit' ? 'Simpan Perubahan' : 'Simpan Nasabah' %></button>
+      <a class="btn" href="/nasabah">Batal</a>
+    </div>
+  </form>
+</main>
+<%- include('../partials/footer') %>

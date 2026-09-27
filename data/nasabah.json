@@ -1,0 +1,38 @@
+[
+  {
+    "id": "fd045c63-4052-48f5-a310-2e9e8e25e512",
+    "kode": "BS-0001",
+    "nama": "Siti Aminah",
+    "alamat": "RT 03/RW 05, Jl. Mawar No. 12",
+    "telepon": "081234567801",
+    "saldo": 25000,
+    "createdAt": "2026-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "0ab2cd46-a580-4e4a-b914-91a6b48c5225",
+    "kode": "BS-0002",
+    "nama": "Bambang Wijaya",
+    "alamat": "RT 02/RW 05, Jl. Melati No. 4",
+    "telepon": "081234567802",
+    "saldo": 18500,
+    "createdAt": "2026-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "1e5dd056-cb2c-4ccb-9992-7ce14c86e1ce",
+    "kode": "BS-0003",
+    "nama": "Ratna Dewi",
+    "alamat": "RT 03/RW 05, Jl. Anggrek No. 7",
+    "telepon": "081234567803",
+    "saldo": 12000,
+    "createdAt": "2026-07-15T00:00:00.000Z"
+  },
+  {
+    "id": "31a194dd-fc91-4f0c-aa0f-b9538460640f",
+    "kode": "BS-0004",
+    "nama": "Joko Santoso",
+    "alamat": "RT 01/RW 05, Jl. Kenanga No. 9",
+    "telepon": "",
+    "saldo": 0,
+    "createdAt": "2026-09-25T00:00:00.000Z"
+  }
+]

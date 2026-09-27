@@ -1,0 +1,55 @@
+<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/nav', { active: active }) %>
+<main class="site-main">
+  <%- include('../partials/flash', { flash: flash, flashType: flashType }) %>
+
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1>Nasabah</h1>
+      <p>Data nasabah dan saldo tabungan sampah yang berjalan.</p>
+    </div>
+    <a class="btn btn-primary" href="/nasabah/baru">Tambah Nasabah</a>
+  </div>
+
+  <% if (nasabahList.length === 0) { %>
+    <div class="state-box">
+      <h3>Belum ada nasabah</h3>
+      <p>Tambahkan nasabah pertama supaya bisa mulai mencatat setoran sampahnya.</p>
+      <a class="btn btn-primary" href="/nasabah/baru">Tambah Nasabah</a>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th>Nama</th>
+            <th>Telepon</th>
+            <th class="num">Saldo</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% nasabahList.forEach(function (n) { %>
+            <tr>
+              <td><%= n.kode %></td>
+              <td><a href="/nasabah/<%= n.id %>"><%= n.nama %></a></td>
+              <td><%= n.telepon || '-' %></td>
+              <td class="num"><%= formatRupiah(n.saldo) %></td>
+              <td>
+                <div class="row-actions">
+                  <a class="btn btn-small" href="/nasabah/<%= n.id %>">Detail</a>
+                  <a class="btn btn-small" href="/nasabah/<%= n.id %>/edit">Ubah</a>
+                  <form method="post" action="/nasabah/<%= n.id %>?_method=DELETE" data-confirm="Hapus nasabah &quot;<%= n.nama %>&quot;? Tindakan ini tidak bisa dibatalkan.">
+                    <button type="submit" class="btn btn-small btn-danger">Hapus</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>
