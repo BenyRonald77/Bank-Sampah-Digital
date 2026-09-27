@@ -15,6 +15,7 @@
   --color-wood-soft: #a9825f;
   --color-accent: #c77f14;
   --color-accent-dark: #96600e;
+  --color-accent-darker: #7a4d0a;
 
   /* warna semantik (status, bukan dekorasi) */
   --color-error: #9b3b2c;
@@ -273,13 +274,15 @@ textarea:focus-visible,
 }
 
 .btn-primary {
-  background: var(--color-accent);
-  border-color: var(--color-accent-dark);
+  /* Warna aksen turmeric versi lebih gelap dipakai di sini (bukan --color-accent murni)
+     karena teks putih di atas --color-accent gagal WCAG AA (rasio 3.24, butuh 4.5). R-25. */
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-darker);
   color: var(--color-white);
 }
 
 .btn-primary:hover {
-  background: var(--color-accent-dark);
+  background: var(--color-accent-darker);
   color: var(--color-white);
 }
 

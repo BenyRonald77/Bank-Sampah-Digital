@@ -13,9 +13,9 @@ Bank Sampah Digital bukan aplikasi marketing, ini adalah **alat kerja harian** u
 | Inti 1 (tinta/header) | Teal Tinta | `#1F3D3B` | Meniru warna tinta stempel/cap koperasi pada buku tabungan lama; dipakai untuk header, nav, teks penting agar kontras tinggi di atas kertas |
 | Inti 2 (kertas) | Kraft Pudar | `#F4EEE1` | Warna kertas kraft/warkat setoran, jadi latar utama yang hangat, bukan putih steril generik |
 | Inti 3 (garis/permukaan) | Cokelat Kayu | `#6B4A2F` | Warna sampul buku tabungan/meja kayu petugas, dipakai untuk border kartu dan teks sekunder agar terasa "fisik" bukan digital datar |
-| Aksen | Kuning Kunyit | `#C77F14` | Warna tinta stempel "LUNAS/DITERIMA" pada kupon; dipakai satu tempat saja: tombol aksi utama dan nilai rupiah positif (setoran masuk) |
+| Aksen | Kuning Kunyit | `#C77F14` (versi gelap `#96600E` dipakai sebagai latar tombol supaya teks putih di atasnya tetap memenuhi kontras WCAG AA) | Warna tinta stempel "LUNAS/DITERIMA" pada kupon; dipakai satu tempat saja: tombol aksi utama (Simpan/Catat/Tambah) |
 
-Warna status fungsional (bukan bagian palet inti, hanya dipakai untuk makna): merah senja `#9B3B2C` untuk error/saldo kurang, hijau lumut `#3F6B4A` untuk konfirmasi berhasil. Total tetap dalam batas 2-3 warna inti + 1 aksen (R-29); status color adalah semantic color, bukan dekorasi.
+Warna status fungsional (bukan bagian palet inti, hanya dipakai untuk makna): merah senja `#9B3B2C` untuk error, saldo kurang, dan baris penarikan (uang keluar); hijau lumut `#3F6B4A` untuk pesan berhasil dan baris setoran (uang masuk). Total tetap dalam batas 2-3 warna inti + 1 aksen (R-29); status color adalah semantic color yang menandai arah transaksi, bukan dekorasi tambahan di atas aksen.
 
 ## Tipografi
 
